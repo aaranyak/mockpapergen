@@ -60,6 +60,7 @@ void add_keyword(SubjectInfo *subject_info, char *keyword, char *category) {
     keyword_data->next = 0; /* Last as of now */
     strncpy(keyword_data->keyword, keyword, 31); /* Strncpy this */
     keyword_data->hash = hash_string(keyword, subject_info->database->hash_keys); /* Hash this in this place */
+    keyword_data->category = index; /* Put it here */
     
     // Add it to the hash table
     KeywordData *current_one = subject_info->hash_table[keyword_data->hash % subject_info->table_size]; /* See if anything is there */
@@ -94,7 +95,6 @@ int load_subject_data(QuestionDatabase *database, char *file_path, int table_siz
         while (file_contents[read_head] != '\n') { /* For each of the keywords */
             char keyword[32]; do keyword[write_head++] = file_contents[read_head++]; while (file_contents[read_head] != ','); /* Load key */
             keyword[write_head] = 0; write_head = 0; read_head++; /* Move on to the next one */
-            printf("Keyword - %s, Category - %s\n", category, keyword);
             add_keyword(subject_info, keyword, category); /* Add it in */
         }
         read_head++;
@@ -110,7 +110,6 @@ int get_category_from_table(char *word, SubjectInfo *subject) {
     int category = -1; /* For now */
     KeywordData *keyword = subject->hash_table[hash % subject->table_size]; /* Get the position in table */
     if (keyword) do if (keyword->hash == hash) category = keyword->category; while (keyword = keyword->next); /* Try to get the category */
-    if (category != -1) printf("(\"%s, %d\")\n", word, category); /* DEBUG */
     return category; /* Get the category */
 }
 
@@ -127,7 +126,7 @@ void tag_categories(PaperQuestion *question, QuestionMetadata *metadata) {
             tag_category = get_category_from_table(load_word, metadata->subject); /* Try to look up in the keyword hash table */
             if (tag_category != -1) metadata->categories[tag_category]++; /* Add to the tag heuristic */
         } if ((letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z')) /* If the character is alphabetic */
-            load_word[write_head++] = (letter > 'Z') ? letter : letter - 20; /* connvert it to lowercase and add it */
+            load_word[write_head++] = (letter > 'Z') ? letter : letter + 32; /* connvert it to lowercase and add it */
     } read_head = 0; write_head = 0; /* Reset both of these */
 
     // Time to load in lists of two words
@@ -142,11 +141,11 @@ void tag_categories(PaperQuestion *question, QuestionMetadata *metadata) {
                 read_head = last_index; /* Go back to this one */
                 last_index = 0; /* Now I hope it does not infinite loop */
             } else { /* We are just in the middle */
-                last_index = read_head + 1; /* Hereyougo */
+                last_index = read_head; /* Hereyougo */
                 load_word[write_head++] = ' '; /* There you go! */
             }
         } if ((letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z')) /* If the character is alphabetic */
-            load_word[write_head++] = (letter > 'Z') ? letter : letter - 20; /* connvert it to lowercase and add it */
+            load_word[write_head++] = (letter > 'Z') ? letter : letter + 32; /* connvert it to lowercase and add it */
     }
     // Now for getting in all the subquestions
     PaperQuestion *subquestion = question->subquestions; /* Get the subquestion */

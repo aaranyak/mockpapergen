@@ -12,10 +12,7 @@
 #include "question_database.h"
 
 
-void test_print_stuff() {
-    char file_path[] = "/home/aaranyak/school_dp_1/computer_science/ia/sample_1.pdf";
-    xmlDocPtr html_file = get_pdf_as_html(file_path);
-    ParsedPaper *parsed_paper = parse_question_paper(html_file); /* Test this */
+void test_print_stuff(ParsedPaper *parsed_paper) {
     printf("Paper Metadata:\n    Subject: %s\n    Target Exam: %s\n    Name: %s\n    Time Limit: %d minutes\n", parsed_paper->subject, parsed_paper->target_exam, parsed_paper->name, parsed_paper->time); /* If you are still sane right now you are not working hard enough */
     PaperQuestion *current = parsed_paper->questions; /* Print all the superquestions one by one */
     for (printf("\n"); current; current = current->next) { /* Loop through all the supers */
@@ -37,6 +34,12 @@ int main(int argc, char **argv) {
     xmlDocPtr html_file = get_pdf_as_html(file_path);
     ParsedPaper *parsed_paper = parse_question_paper(html_file); /* Test this */
     int errors = load_paper_into_database(database, parsed_paper); /* Load paper */
+
+    // Time to LOAD
+    char file_path_2[] = "/home/aaranyak/school_dp_1/computer_science/ia/sample_2.pdf";
+    html_file = get_pdf_as_html(file_path_2); /* Load file */
+    parsed_paper = parse_question_paper(html_file); /* parse other file */
+    errors += load_paper_into_database(database, parsed_paper); /* Hopefully nothing breaks */
     printf("Errors - %d\n", errors);
     SubjectInfo *computer_science = database->subjectlist; /* Since we've only loaded one */
     for (int i = 0; i < computer_science->num_categories; i++) { /* Loop through all the categories */

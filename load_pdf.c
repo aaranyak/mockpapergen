@@ -206,6 +206,14 @@ inline int stop_question_text(TextList *thing) {
     return 0; /* This is not a stop text */
 }
 
+int check_contents_end(TextList *thing) {
+    /* Checks if this is the end of a question contents */
+    int len = strlen(thing->text); /* saves typing and runtime */
+    if (thing->text[len - 1] == ']' && (thing->text[len - 3] == '[' || thing->text[len - 4] == '[')) return 1; /* marks thing */
+    if (in_range(strstr(thing->text, "(a)") - thing->text, 0, 2) || in_range(strstr(thing->text, "(i)") - thing->text, 0, 2)) return 2; /* This is a subquestion */
+    return 0;
+}
+
 TextList *get_question_contents(PaperQuestion *question, TextList *iterator) {
     /* Get the contents of the question */
     TextList *tl_head = 0, *tl_previous = 0, *tl_current = 0;
@@ -213,8 +221,7 @@ TextList *get_question_contents(PaperQuestion *question, TextList *iterator) {
         /* One by one until you reach the marks */
         if (iterator->text[0] == 0) continue; /* Max safety check for null textboxes */
         if (iterator->text[0] == ' ' && iterator->text[1] == 0) continue; /* This is useless ignore it */
-        int len = strlen(iterator->text); /* saves typing and runtime */
-        if (iterator->text[len - 1] == ']') break; /* marks thing */
+        if (check_contents_end(iterator)) break;; /* marks thing */
         tl_current = copy_text_list(iterator); /* Copy the textlist */
         if (!tl_head) tl_head = tl_current; /* Set the list head */
         else tl_previous->next = tl_current;
@@ -336,12 +343,14 @@ int deal_with_subquestions(PaperQuestion *superquestion, TextList *question_text
             TextList *tl_current = get_question_contents(superquestion, iterator); /* This thing is reusable now */
 
             // Read no. of marks
-
-            char converttoint[20]; int currentlen = strlen(tl_current->text); /* Important stuffs */;
-            int startbox = (tl_current->text[currentlen - 3] == '[') ? currentlen - 2 : currentlen - 3; /* Check for num digits */
-            memcpy(converttoint, tl_current->text + startbox, currentlen - startbox - 1); /* Length of whatever */
-            converttoint[currentlen - startbox - 1] = 0; /* Add null terminator */
-            sscanf(converttoint, "%d", &question->marks); /* I can't do the bee hold joke now although I really liked it */
+            question->marks = 0; /* Clear this thing as of now */
+            if (check_contents_end(tl_current) == 1) {
+                char converttoint[20]; int currentlen = strlen(tl_current->text); /* Important stuffs */;
+                int startbox = (tl_current->text[currentlen - 3] == '[') ? currentlen - 2 : currentlen - 3; /* Check for num digits */
+                memcpy(converttoint, tl_current->text + startbox, currentlen - startbox - 1); /* Length of whatever */
+                converttoint[currentlen - startbox - 1] = 0; /* Add null terminator */
+                sscanf(converttoint, "%d", &question->marks); /* I can't do the bee hold joke now although I really liked it */
+            } else second_order_subquestions(question, iterator); /* See if this has any higher order subquestions if so parse them */
         } else question->marks = 0; /* To make it a little more normal */
         
         // Get the subsubquestions
@@ -402,11 +411,14 @@ int parse_questions(ParsedPaper *paper, TextList *contents) {
             TextList *tl_current = get_question_contents(superquestion, iterator); /* Package it into it's own function */
 
             // Read no. of marks
-            char converttoint[20]; int currentlen = strlen(tl_current->text); /* Important stuffs */;
-            int startbox = (tl_current->text[currentlen - 3] == '[') ? currentlen - 2 : currentlen - 3; /* Check for num digits */
-            memcpy(converttoint, tl_current->text + startbox, currentlen - startbox - 1); /* Length of whatever */
-            converttoint[currentlen - startbox - 1] = 0; /* Add null terminator */
-            sscanf(converttoint, "%d", &superquestion->marks); /* I can't do the bee hold joke now although I really liked it */
+            superquestion->marks = 0; /* Clear this thing as of now */
+            if (check_contents_end(tl_current) == 1) {
+                char converttoint[20]; int currentlen = strlen(tl_current->text); /* Important stuffs */;
+                int startbox = (tl_current->text[currentlen - 3] == '[') ? currentlen - 2 : currentlen - 3; /* Check for num digits */
+                memcpy(converttoint, tl_current->text + startbox, currentlen - startbox - 1); /* Length of whatever */
+                converttoint[currentlen - startbox - 1] = 0; /* Add null terminator */
+                sscanf(converttoint, "%d", &superquestion->marks); /* I can't do the bee hold joke now although I really liked it */
+            } else deal_with_subquestions(superquestion, iterator); /* When in doubt, just call a function that doesn't exist yet */
         } else superquestion->marks = 0; /* Just to make sure it is not weird */
         // Deal with subquestions now 
         if (stop_value == 1) /* Subquestions. I have to deal with subquestions. See how difficult this "seemingly" simple task is? */
