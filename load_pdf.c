@@ -221,7 +221,7 @@ TextList *get_question_contents(PaperQuestion *question, TextList *iterator) {
         /* One by one until you reach the marks */
         if (iterator->text[0] == 0) continue; /* Max safety check for null textboxes */
         if (iterator->text[0] == ' ' && iterator->text[1] == 0) continue; /* This is useless ignore it */
-        if (check_contents_end(iterator)) break;; /* marks thing */
+        if (check_contents_end(iterator)) break; /* marks thing */
         tl_current = copy_text_list(iterator); /* Copy the textlist */
         if (!tl_head) tl_head = tl_current; /* Set the list head */
         else tl_previous->next = tl_current;
