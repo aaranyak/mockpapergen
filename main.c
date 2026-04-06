@@ -12,7 +12,8 @@
 #include "question_database.h"
 #include "gui.h"
 
-void test_print_stuff() {
+void savethis() {
+
     QuestionDatabase *database = init_database(); /* Make the database */
     load_subject_data(database, "/home/aaranyak/school_dp_1/computer_science/ia/subject_data_test.txt", 128); /* This stuff */
     char file_path[] = "/home/aaranyak/school_dp_1/computer_science/ia/sample.pdf";
@@ -31,16 +32,6 @@ void test_print_stuff() {
         int current_count = 0; QuestionMetadata *current = database->metadata; /* Going to loop now */
         if (current) do if (current->main_category == i) current_count++; while (current = current->next); /* NYOOOOOOM */
         printf("Category \"%s\" - %d\n", computer_science->categories[i], current_count); /* Get this */
-    }
-    printf("Paper Metadata:\n    Subject: %s\n    Target Exam: %s\n    Name: %s\n    Time Limit: %d minutes\n", parsed_paper->subject, parsed_paper->target_exam, parsed_paper->name, parsed_paper->time); /* If you are still sane right now you are not working hard enough */
-    PaperQuestion *current = parsed_paper->questions; /* Print all the superquestions one by one */
-    for (printf("\n"); current; current = current->next) { /* Loop through all the supers */
-        printf("Question %d: %s (%d marks)\n", current->index + 1, current->text, current->marks); /* Print the question */
-        if (current->subquestions) for (PaperQuestion *subquestion = current->subquestions; subquestion; subquestion = subquestion->next) {
-            printf("    Subquestion %d: %s (%d marks)\n", subquestion->index + 1, subquestion->text, subquestion->marks); /* SUBQUESTION */
-            if (subquestion->subquestions) for (PaperQuestion *subsub = subquestion->subquestions; subsub; subsub = subsub->next)
-                printf("        SubSubquestion %d: %s (%d marks)\n", subsub->index + 1, subsub->text, subsub->marks); /* META */
-        }
     }
 }
 

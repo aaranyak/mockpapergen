@@ -25,7 +25,7 @@ void delete_question_list(PaperQuestion *question) {
     PaperQuestion *current = question, *next; /* Somestuff I'm just mindlessly copying the stuff I wrote a while back */
     while (current) { /* I'm not exactly sane right now you see */
         next = current->next; /* Save this stuff before it goes away */
-        if (question->contents) delete_text_list(question->contents); /* Properly free this */
+        if (current->contents) delete_text_list(current->contents); /* Properly free this */
         free(current->text); /* Free this */
         if (current->subquestions) delete_question_list(current->subquestions); /* Except for this function being recursive (FD above) */
         free(current); /* Get rid of it good */

@@ -55,11 +55,12 @@ void load_paper_callback(GtkButton *button, GuiData *gui_data) {
     gint result = gtk_native_dialog_run(GTK_NATIVE_DIALOG (file_chooser)); /* Run the file chooser */
     if (result != GTK_RESPONSE_ACCEPT) {g_object_unref(file_chooser); return;}
     char *file_path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (file_chooser)); /* Get this */
-    
+
     // Load in the paper
     xmlDocPtr html_file = get_pdf_as_html(file_path); /* Load in the html file */
     ParsedPaper *parsed_paper = parse_question_paper(html_file); /* Test this */
     load_paper_into_database(database, parsed_paper); /* Load paper */
+    delete_question_list(parsed_paper->questions); free(parsed_paper); /* Do the clean up */
 
     update_database_info(database, gui_data->database_info); /* Updates that thing */
     g_object_unref(file_chooser); /* Free stuff */

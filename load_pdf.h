@@ -21,5 +21,6 @@ int parse_questions(ParsedPaper *paper, TextList *contents);
 TextList *get_question_contents(PaperQuestion *question, TextList *iterator);
 int second_order_subquestions(PaperQuestion *superquestion, TextList *question_text);
 int check_contents_end(TextList *thing);
+void test_print_stuff(ParsedPaper *parsed_paper);
 #define in_range(val, min, max) (((val) >= (min)) && ((val) <= (max))) /* Quick help to check if value is in range */
 #endif

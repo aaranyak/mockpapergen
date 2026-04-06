@@ -100,7 +100,7 @@ int load_subject_data(QuestionDatabase *database, char *file_path, int table_siz
         read_head++;
         if (file_contents[read_head] == '\n') break;
     }
-
+    free(file_contents); /* I can't believe you forgot that */
     return 0;
 }
 

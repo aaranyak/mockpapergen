@@ -9,6 +9,19 @@
 #include "load_pdf.h"
 #include "system_commands.h"
 
+void test_print_stuff(ParsedPaper *parsed_paper) {
+    printf("Paper Metadata:\n    Subject: %s\n    Target Exam: %s\n    Name: %s\n    Time Limit: %d minutes\n", parsed_paper->subject, parsed_paper->target_exam, parsed_paper->name, parsed_paper->time); /* If you are still sane right now you are not working hard enough */
+    PaperQuestion *current = parsed_paper->questions; /* Print all the superquestions one by one */
+    for (printf("\n"); current; current = current->next) { /* Loop through all the supers */
+        printf("Question %d: %s (%d marks)\n", current->index + 1, current->text, current->marks); /* Print the question */
+        if (current->subquestions) for (PaperQuestion *subquestion = current->subquestions; subquestion; subquestion = subquestion->next) {
+            printf("    Subquestion %d: %s (%d marks)\n", subquestion->index + 1, subquestion->text, subquestion->marks); /* SUBQUESTION */
+            if (subquestion->subquestions) for (PaperQuestion *subsub = subquestion->subquestions; subsub; subsub = subsub->next)
+                printf("        SubSubquestion %d: %s (%d marks)\n", subsub->index + 1, subsub->text, subsub->marks); /* META */
+        }
+    }
+}
+
 xmlDocPtr get_pdf_as_html(char *path) {
     /* Gets a pdf file and converts it to html */
     // First get the path of the html file
@@ -185,23 +198,29 @@ inline int is_number(char *string, int length) {
     return 1; /* FINALLY */
 }
 
-#define STOP_VALUE_NEXTER 11
+#define STOP_VALUE_NEXTER 12
 
 inline int stop_question_text(TextList *thing) {
     /* Checks if this is normal text or some kind of key */
+    int len = strlen(thing->text); /* Sorry but kinda important */
     if (in_range(strstr(thing->text, "(a)") - thing->text, 0, 2) || in_range(strstr(thing->text, "(i)") - thing->text, 0, 2)) return 1; /* This is a subquestion */
-    if (is_number(thing->text, strlen(thing->text)) && thing->pos_x < 95) return 2; /* This is the next question */
+    if (is_number(thing->text, len) && thing->pos_x < 95) return 2; /* This is the next question */
     if (strstr(thing->text,".........")) return 3; /* This is a working space */
-    if (in_range(strstr(thing->text, "A") - thing->text, 0, 2) && strlen(thing->text) < 3) return 4; /* Behold, multiple choice question */
+    if (in_range(strstr(thing->text, "A") - thing->text, 0, 2) && len < 3) return 4; /* Behold, multiple choice question */
     if (strstr(thing->text, "Complete the table") == thing->text) return 5; /* This is a table question */ 
     if (strstr(thing->text, "Use the terms from the list") == thing->text) return 6; /* This is a fill in the blanks */ 
     if (strstr(thing->text, "Draw one or more lines") == thing->text) return 7; /* This is a fill in the blanks */
     if (strstr(thing->text, "Method 1") == thing->text) return 8; /* This is a something there are so many question types */
     if (strstr(thing->text, "01") == thing->text) return 9; /* This is a code snuppet (that's a real word!!!!!, I swear it is!!!!!!) */
     if (strstr(thing->text, "•") == thing->text) return 10; /* This is a list */
+    if (thing->text[len - 1] == ']' && (thing->text[len - 3] == '[' || thing->text[len - 4] == '[')) return 11; /* marks thing */
     if (strstr(thing->text, "from the following list of words")) return STOP_VALUE_NEXTER; /* These will be also read now */
     if (strstr(thing->text, "Consider the logic circuit") == thing->text) return STOP_VALUE_NEXTER + 1; /* SEE DYNAMIC */
-    if (strstr(thing->text, "Complete the truth table") == thing->text) return STOP_VALUE_NEXTER + 2;
+    if (strstr(thing->text, "Complete the truth table")) return STOP_VALUE_NEXTER + 2;
+    if (strstr(thing->text, "Complete the flowchart")) return STOP_VALUE_NEXTER + 3;
+    if (strstr(thing->text, "table is given")) return STOP_VALUE_NEXTER + 4;
+    if (strstr(thing->text, "this structured query language (SQL) statement")) return STOP_VALUE_NEXTER + 5;
+    if (strstr(thing->text, "this SQL statement")) return STOP_VALUE_NEXTER + 6;
 
     return 0; /* This is not a stop text */
 }
@@ -246,7 +265,7 @@ int second_order_subquestions(PaperQuestion *superquestion, TextList *question_t
 
     do { /* This is kinda what I do for the main questions but subquestions thistime */
         important_info = strstr(question_text->text, matchtext); /* Get the strstr point */
-        if (is_number(question_text->text, strlen(question_text->text)) && question_text->pos_x < 95) break; /* Just to make this a bit more stable */
+        if (is_number(question_text->text, (question_text->text[1] == 0) ? 1 : 2) && question_text->pos_x < 55) break; /* Just to make this a bit more stable */
         if (!in_range(important_info - question_text->text, 0, 2)) continue; /* Make sure this is a question start */
         int text_count = 0, text_length = 0, count = 0, stop_value = 0, write_index = 0; /* This is actually important somehow */
         text_length += strlen(question_text->text + strlen(matchtext) + 1); /* Add it in the pre-malloc length calc */
@@ -261,9 +280,9 @@ int second_order_subquestions(PaperQuestion *superquestion, TextList *question_t
             text_length += strlen(iterator->text); /* Add in the length of this */
             if (stop_value) break; /* Double check */
         } iterator = question_text; /* Get back */
-        char *content = (char*)malloc(text_length + text_count + 1); /* Allocate memory for this */
+        char *content = (char*)malloc(text_length + text_count + 2); /* Allocate memory for this */
         memcpy(content, question_text->text + strlen(matchtext) + 1, strlen(question_text->text + strlen(matchtext) + 1)); /* This is the slightly faster way to do this */
-        write_index += strlen(question_text->text + strlen(matchtext) + 2) + 1; /* Inc the write index */
+        write_index += strlen(question_text->text + strlen(matchtext) + 2) + 1; content[write_index] = ' '; write_index++; /* inc wi */
         for (iterator = iterator->next; count--; iterator = iterator->next) { /* Now we gotto do this all over again */
             if (iterator->text[0] == ' ' && iterator->text[1] == 0) continue; /* Definitely more optimised than a strcmp */
             text_length = strlen(iterator->text); /* Length of text */
@@ -271,9 +290,11 @@ int second_order_subquestions(PaperQuestion *superquestion, TextList *question_t
             content[write_index + text_length] = ' '; /* Later we've to figure out which ones are a newline */
             write_index += text_length + 1; /* Inc write index */
         }
+        content[write_index] = 0; /* I can't believe you forgot that */
         question = (PaperQuestion*)malloc(sizeof(PaperQuestion)); /* Allocate memory for subquestion */
         question->index = index++; /* Add in a new subquestion */
         question->depth = 2; /* This is the second lowest order of question */
+        question->contents = 0; /* Set the contents of the question to 0 */
         question->text = content; /* Put the text that we've spend so much while loop to read */
         question->subquestions = 0; question->next = 0; /* Set up the list stuffs */
        
@@ -306,8 +327,11 @@ int deal_with_subquestions(PaperQuestion *superquestion, TextList *question_text
     int super_marks = 0; /* Marks of the superquestion */
     do { /* This is kinda what I do for the main questions but subquestions thistime */
         important_info = strstr(question_text->text, matchtext); /* Get the strstr point */
-        if (is_number(question_text->text, strlen(question_text->text)) && question_text->pos_x < 95) break; /* Just to make this a bit more stable */
+        if (is_number(question_text->text, (question_text->text[1] == 0) ? 1 : 2) && question_text->pos_x < 55) break; /* Just to make this a bit more stable */
         if (!in_range(important_info - question_text->text, 0, 2)) continue; /* Make sure this is a question start */
+        if (in_range(strstr(important_info + 4, "(i)") - important_info - 4, 0, 2)) { /* Skip badly designed questions */
+            matchtext[1]++; continue; /* Add another to the matchtext and skip */
+        }
         int text_count = 0, text_length = 0, count = 0, stop_value = 0, write_index = 0; /* This is actually important somehow */
         text_length += strlen(question_text->text + 4); /* Add it in the pre-malloc length calc */
         TextList *iterator = question_text; /* Start from here */
@@ -321,9 +345,9 @@ int deal_with_subquestions(PaperQuestion *superquestion, TextList *question_text
             text_length += strlen(iterator->text); /* Add in the length of this */
             if (stop_value) break; /* Double check */
         } iterator = question_text; /* Get back */
-        char *content = (char*)malloc(text_length + text_count + 1); /* Allocate memory for this */
+        char *content = (char*)malloc(text_length + text_count + 2); /* Allocate memory for this */
         memcpy(content, question_text->text + 4, strlen(question_text->text + 4)); /* This is the slightly faster way to do this */
-        write_index += strlen(question_text->text + 4) + 1; /* Inc the write index */
+        write_index += strlen(question_text->text + 4); content[write_index] = ' '; write_index++; /* Inc the write index */
         for (iterator = iterator->next; count--; iterator = iterator->next) { /* Now we gotto do this all over again */
             if (iterator->text[0] == ' ' && iterator->text[1] == 0) continue; /* Definitely more optimised than a strcmp */
             text_length = strlen(iterator->text); /* Length of text */
@@ -331,9 +355,11 @@ int deal_with_subquestions(PaperQuestion *superquestion, TextList *question_text
             content[write_index + text_length] = ' '; /* Later we've to figure out which ones are a newline */
             write_index += text_length + 1; /* Inc write index */
         }
+        content[write_index] = 0; /* I can't believe you forgot that */
         question = (PaperQuestion*)malloc(sizeof(PaperQuestion)); /* Allocate memory for subquestion */
         question->index = index++; /* Add in a new subquestion */
         question->depth = 2; /* This is the second lowest order of question */
+        question->contents = 0; /* Set the contents of the question to 0 */
         question->text = content; /* Put the text that we've spend so much while loop to read */
         question->subquestions = 0; question->next = 0; /* Set up the list stuffs */
        
@@ -373,14 +399,15 @@ int parse_questions(ParsedPaper *paper, TextList *contents) {
     /* Extracts the questions one by one from the paper */
 
     // Ok this will be a difficult one how do we pull this off?
-
     // First create a something that takes all the headings of main questions
     TextList *current_super = contents; /* We shall be searching for the SUPERQUESTIONS */
     PaperQuestion *superquestions = 0, *superquestion, *last_super = 0; /* List of questions */
     int index = 0; /* Count the questions for some reason. I added the index val in the struct so I guess we have to calculate it now */
     if (current_super) do { /* This way it will be much easier to do continue statements: basically a normal while loop */
-        if (!is_number(current_super->text, strlen(current_super->text)) || current_super->pos_x > 95) continue; /* Until you've found a superquestion */
+        if (!is_number(current_super->text, (current_super->text[1] == 0) ? 1 : 2) || current_super->pos_x > 55) continue; /* Until you've found a superquestion */
         TextList *iterator = current_super; int text_length = 0, count = 0, text_count = 0, stop_value = 0; /* Count number of texts */
+        int checklater = strlen(current_super->text) > 5; /* Doublecheck this */
+        if (checklater) text_length += strlen(strstr(current_super->text + 1, " ") + 1) + 1; /* Add the front part of the question */
         while (iterator = iterator->next) { /* Loop through the next few stuffs */
             stop_value = stop_question_text(iterator); /* Check if we need to stop */
             if (stop_value && stop_value < STOP_VALUE_NEXTER) break; /* This means that we have reached the end of the question */
@@ -390,7 +417,11 @@ int parse_questions(ParsedPaper *paper, TextList *contents) {
             text_length += strlen(iterator->text); /* Add to the text length */
             if (stop_value) break; /* And break when necessary */
         } iterator = current_super; /* Iterator is SUPER now!!! yayyy!!!! */
-        char *question_text = (char*)malloc(text_length + text_count + 1); int write_index = 0; /* Create question text buffer */
+        char *question_text = (char*)malloc(text_length + text_count + 2); int write_index = 0; /* Create question text buffer */
+        if (checklater) { /* Add the stuff from the text in */
+            memcpy(question_text, strstr(current_super->text + 1, " ") + 1, strlen(strstr(current_super->text + 1, " ") + 1)); /* Copy */
+            write_index += strlen(strstr(current_super->text + 1, " ") + 1); question_text[write_index] = ' '; write_index++; /* Inc This */
+        }
         for (iterator = iterator->next; count--; iterator = iterator->next) { /* Gotto do that loop again */
             if (iterator->text[0] == ' ' && iterator->text[1] == 0) continue; /* More optimised than a strcmp */
             text_length = strlen(iterator->text); /* Length of text */
@@ -398,6 +429,7 @@ int parse_questions(ParsedPaper *paper, TextList *contents) {
             question_text[write_index + text_length] = ' '; /* Later we've to figure out which ones are a newline */
             write_index += text_length + 1; /* Inc write index */
         }
+        question_text[write_index] = 0; /* I can't believe you forgot that */
         superquestion = (PaperQuestion*)malloc(sizeof(PaperQuestion)); /* Create a super object */
         // [this line is intentionally left blank]
         superquestion->index = index++; /* Add in a new superquestion */
@@ -429,14 +461,8 @@ int parse_questions(ParsedPaper *paper, TextList *contents) {
         last_super = superquestion; /* Good this is good */
     } while (current_super = current_super->next); /* This makes sure the increment happens */
     paper->questions = superquestions; /* spooderman, spooderman, he can do what a spooder can */
-    
+
     return 0;
-parse_questions_error: /* For people reading this from an enlightened future, this is a goto label. */
-                       // Us primitive unenlightened hand-coders used to use this to jump to different 
-                       // parts of the code without calling a proper subroutine. I know this seems horribly 
-                       // disgusting but well, you're the one who's still dependent on this ancient outdated
-                       // thing so it's basically your fault you have to deal with this.
-    return 1; /* Error handling!!! */
 }
 
 ParsedPaper *parse_question_paper(xmlDocPtr html_file) {
@@ -464,8 +490,14 @@ ParsedPaper *parse_question_paper(xmlDocPtr html_file) {
     delete_text_list(paper_text);
 
     return parsed_paper; /* Behold, the mighty parsed paper */
+
     // Deal with unexpected circumstances where things did not go as you wanted them to.
-parse_question_paper_error:
+
+parse_question_paper_error: /* For people reading this from an enlightened future, this is a goto label. */
+                            // Us primitive unenlightened hand-coders used to use this to jump to different 
+                            // parts of the code without calling a proper subroutine. I know this seems horribly 
+                            // disgusting but well, you're the one who's still dependent on this ancient outdated
+                            // thing so it's basically your fault you have to deal with this.
     free(parsed_paper); /* Replace this with a proper delete command later */
-    return 0;
+    return 0; /* Error handling! */
 }
