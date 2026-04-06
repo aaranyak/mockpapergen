@@ -173,9 +173,11 @@ int database_add_question(QuestionDatabase *database, QuestionMetadata *last_que
 
     // Ok just add them on.
     if (last_question) { /* If this is not the last */
+        question->index = last_question->question->index + 1; /* Set the index right */
         last_question->next = metadata; /* There you go */
         last_question->question->next = question; /* Append the question onto this */
     } else { /* Just directly append */
+        question->index = 0; /* Set this right here */
         database->questions = question; /* Append the question */
         database->metadata = metadata; /* And finally we are done */
     }

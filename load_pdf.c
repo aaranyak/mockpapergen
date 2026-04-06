@@ -210,18 +210,15 @@ inline int stop_question_text(TextList *thing) {
     if (strstr(thing->text, "Complete the table") == thing->text) return 5; /* This is a table question */ 
     if (strstr(thing->text, "Use the terms from the list") == thing->text) return 6; /* This is a fill in the blanks */ 
     if (strstr(thing->text, "Draw one or more lines") == thing->text) return 7; /* This is a fill in the blanks */
+    if (strstr(thing->text, "Draw one or more lines") == thing->text) return 7; /* This is a fill in the blanks */
     if (strstr(thing->text, "Method 1") == thing->text) return 8; /* This is a something there are so many question types */
     if (strstr(thing->text, "01") == thing->text) return 9; /* This is a code snuppet (that's a real word!!!!!, I swear it is!!!!!!) */
     if (strstr(thing->text, "•") == thing->text) return 10; /* This is a list */
     if (thing->text[len - 1] == ']' && (thing->text[len - 3] == '[' || thing->text[len - 4] == '[')) return 11; /* marks thing */
     if (strstr(thing->text, "from the following list of words")) return STOP_VALUE_NEXTER; /* These will be also read now */
     if (strstr(thing->text, "Consider the logic circuit") == thing->text) return STOP_VALUE_NEXTER + 1; /* SEE DYNAMIC */
-    if (strstr(thing->text, "Complete the truth table")) return STOP_VALUE_NEXTER + 2;
-    if (strstr(thing->text, "Complete the flowchart")) return STOP_VALUE_NEXTER + 3;
-    if (strstr(thing->text, "table is given")) return STOP_VALUE_NEXTER + 4;
-    if (strstr(thing->text, "this structured query language (SQL) statement")) return STOP_VALUE_NEXTER + 5;
-    if (strstr(thing->text, "this SQL statement")) return STOP_VALUE_NEXTER + 6;
-
+    if (strstr(thing->text, "Complete the ")) return STOP_VALUE_NEXTER + 2;
+    if (strstr(thing->text, "table is given")) return STOP_VALUE_NEXTER + 3;
     return 0; /* This is not a stop text */
 }
 

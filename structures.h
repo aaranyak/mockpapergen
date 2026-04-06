@@ -41,10 +41,10 @@ typedef struct paper_question_s { /* This holds the structure of a question */
     int index; /* The index of the question in current tree */
     int depth; /* Subquestion order */
     // Stuffs
-    char *text; /* The main question */
     question_type type; /* Obvious */
     int marks; /* This is number of marks */
-    
+    char *text; /* The main question */
+
     TextList *contents; /* Contents of the question */
     // Meta
     PaperQuestion *subquestions; /* Subquestions of this one */
