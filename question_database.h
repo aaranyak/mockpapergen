@@ -26,6 +26,8 @@ typedef struct question_metadata_s {
     int categories[32]; /* Heuristics regarding type of question*/
     int main_category; /* The major category */
 
+    int is_used; /* This is for checking questions */
+
 } QuestionMetadata; /* Here, question-metadata */
 
 typedef struct keyword_data_s { /* Hash table entry */
@@ -45,6 +47,8 @@ typedef struct subject_info_s { /* Subject content heuristics */
     int num_categories; /* Categories of questions */
     char categories[32][64]; /* Names of categories */
     int table_size; KeywordData **hash_table; /* Array of linked lists */
+    QuestionMetadata **category_indices[32]; /* List of arrays */
+    int index_lengths[32]; /* Length of the arrays */
 
 } SubjectInfo; /* Here */
 

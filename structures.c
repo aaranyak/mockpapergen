@@ -56,7 +56,7 @@ PaperQuestion *copy_question(PaperQuestion *original) {
     PaperQuestion *question = (PaperQuestion*)malloc(sizeof(PaperQuestion)); /* Create this thing */
     question->index = original->index; question->depth = original->depth; question->type = original->type; question->marks = original->marks;
     question->text = (char*)malloc(strlen(original->text) + 1); strcpy(question->text, original->text); /* Copy this thing in */
-    question->next = 0; question->subquestions = 0; /* As of now we aren't putting anything in it anymore */ 
+    question->next = 0; question->subquestions = 0; question->contents = 0; /* As of now we aren't putting anything in it anymore */ 
 
     // Copy textlist
     if (original->contents) {

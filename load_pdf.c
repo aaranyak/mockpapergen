@@ -198,7 +198,7 @@ inline int is_number(char *string, int length) {
     return 1; /* FINALLY */
 }
 
-#define STOP_VALUE_NEXTER 12
+#define STOP_VALUE_NEXTER 13
 
 inline int stop_question_text(TextList *thing) {
     /* Checks if this is normal text or some kind of key */
@@ -214,11 +214,13 @@ inline int stop_question_text(TextList *thing) {
     if (strstr(thing->text, "Method 1") == thing->text) return 8; /* This is a something there are so many question types */
     if (strstr(thing->text, "01") == thing->text) return 9; /* This is a code snuppet (that's a real word!!!!!, I swear it is!!!!!!) */
     if (strstr(thing->text, "•") == thing->text) return 10; /* This is a list */
-    if (thing->text[len - 1] == ']' && (thing->text[len - 3] == '[' || thing->text[len - 4] == '[')) return 11; /* marks thing */
+    if (strstr(thing->text, "Working space")) return 11; /* Working space */
+    if (thing->text[len - 1] == ']' && (thing->text[len - 3] == '[' || thing->text[len - 4] == '[')) return 12; /* marks thing */
     if (strstr(thing->text, "from the following list of words")) return STOP_VALUE_NEXTER; /* These will be also read now */
     if (strstr(thing->text, "Consider the logic circuit") == thing->text) return STOP_VALUE_NEXTER + 1; /* SEE DYNAMIC */
     if (strstr(thing->text, "Complete the ")) return STOP_VALUE_NEXTER + 2;
     if (strstr(thing->text, "table is given")) return STOP_VALUE_NEXTER + 3;
+    if (strstr(thing->text, "following table")) return STOP_VALUE_NEXTER + 4;
     return 0; /* This is not a stop text */
 }
 
@@ -268,7 +270,7 @@ int second_order_subquestions(PaperQuestion *superquestion, TextList *question_t
         text_length += strlen(question_text->text + strlen(matchtext) + 1); /* Add it in the pre-malloc length calc */
         TextList *iterator = question_text; /* Start from here */
         // Time to get all the text in the subquestion
-        while (iterator = iterator->next) { /* Start with a skip */
+        if (!stop_question_text(iterator)) while (iterator = iterator->next) { /* Start with a skip */
             stop_value = stop_question_text(iterator); /* Check if to stop now */
             if (stop_value && stop_value < STOP_VALUE_NEXTER) break; /* As you should expect to */
             count++; /* As YOU should EXPECT to */
@@ -296,7 +298,7 @@ int second_order_subquestions(PaperQuestion *superquestion, TextList *question_t
         question->subquestions = 0; question->next = 0; /* Set up the list stuffs */
        
         // Get question details and marks
-        TextList *tl_current = get_question_contents(superquestion, iterator); /* This thing is reusable now */
+        TextList *tl_current = get_question_contents(question, iterator); /* This thing is reusable now */
         // Read no. of marks
         char converttoint[20]; int currentlen = strlen(tl_current->text); /* Important stuffs */;
         int startbox = (tl_current->text[currentlen - 3] == '[') ? currentlen - 2 : currentlen - 3; /* Check for num digits */
@@ -333,7 +335,7 @@ int deal_with_subquestions(PaperQuestion *superquestion, TextList *question_text
         text_length += strlen(question_text->text + 4); /* Add it in the pre-malloc length calc */
         TextList *iterator = question_text; /* Start from here */
         // Time to get all the text in the subquestion
-        while (iterator = iterator->next) { /* Start with a skip */
+        if (!stop_question_text(iterator)) while (iterator = iterator->next) { /* Start with a skip */
             stop_value = stop_question_text(iterator); /* Check if to stop now */
             if (stop_value && stop_value < STOP_VALUE_NEXTER) break; /* As you should expect to */
             count++; /* As YOU should EXPECT to */
@@ -363,7 +365,7 @@ int deal_with_subquestions(PaperQuestion *superquestion, TextList *question_text
         // Get question details and marks
         
         if (stop_value != 1) { /* if contain you don't subquestions */        
-            TextList *tl_current = get_question_contents(superquestion, iterator); /* This thing is reusable now */
+            TextList *tl_current = get_question_contents(question, iterator); /* This thing is reusable now */
 
             // Read no. of marks
             question->marks = 0; /* Clear this thing as of now */
@@ -405,7 +407,7 @@ int parse_questions(ParsedPaper *paper, TextList *contents) {
         TextList *iterator = current_super; int text_length = 0, count = 0, text_count = 0, stop_value = 0; /* Count number of texts */
         int checklater = strlen(current_super->text) > 5; /* Doublecheck this */
         if (checklater) text_length += strlen(strstr(current_super->text + 1, " ") + 1) + 1; /* Add the front part of the question */
-        while (iterator = iterator->next) { /* Loop through the next few stuffs */
+        if (!stop_question_text(iterator)) while (iterator = iterator->next) { /* Loop through the next few stuffs */
             stop_value = stop_question_text(iterator); /* Check if we need to stop */
             if (stop_value && stop_value < STOP_VALUE_NEXTER) break; /* This means that we have reached the end of the question */
             count++; /* Count the text counts blah blah blah !!! */

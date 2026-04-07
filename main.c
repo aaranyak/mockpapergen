@@ -10,7 +10,9 @@
 #include "structures.h"
 #include "load_pdf.h"
 #include "question_database.h"
+#include "save_database.h"
 #include "gui.h"
+#include "generate_paper.h"
 
 int main(int argc, char **argv) {
     /* This is just a main function for executing the main thing */

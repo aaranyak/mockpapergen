@@ -23,6 +23,6 @@ typedef struct gui_data_s {
 
 } GuiData; /* Stores gui data */
 void update_database_info(QuestionDatabase *database, GtkWidget *database_info);
-void load_subject_callback(GtkButton *button, GuiData *gui_data);
+void save_callback(GtkButton *button, GuiData *gui_data);
 void load_paper_callback(GtkButton *button, GuiData *gui_data);
 #endif

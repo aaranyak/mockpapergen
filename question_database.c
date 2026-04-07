@@ -49,6 +49,7 @@ SubjectInfo *add_subject(QuestionDatabase *database, char *subject_name, int tab
         while (current->next) current = current->next; /* Get last one */
         current->next = subject_info; /* Upend */
     }
+
     return subject_info; /* Ok make it easier for me later */
 }
 
@@ -101,6 +102,10 @@ int load_subject_data(QuestionDatabase *database, char *file_path, int table_siz
         if (file_contents[read_head] == '\n') break;
     }
     free(file_contents); /* I can't believe you forgot that */
+    for (int i = 0; i < subject_info->num_categories; i++) { /* Loop through all the categories */
+        subject_info->category_indices[i] = (QuestionMetadata**)malloc(sizeof(QuestionMetadata*) * 128); /* Set this */
+        subject_info->index_lengths[i] = 0; /* Set index length */
+    }
     return 0;
 }
 
@@ -169,7 +174,7 @@ int database_add_question(QuestionDatabase *database, QuestionMetadata *last_que
         if (metadata->categories[i] > max_number) { /* If this exceeds the previous */
             max_number = metadata->categories[i]; max_index = i; /* Update the values */
         }
-    metadata->main_category = max_index; /* Get the primary category */
+    metadata->main_category = max_index; metadata->is_used = 0; /* Get the primary category */
 
     // Ok just add them on.
     if (last_question) { /* If this is not the last */
@@ -181,6 +186,12 @@ int database_add_question(QuestionDatabase *database, QuestionMetadata *last_que
         database->questions = question; /* Append the question */
         database->metadata = metadata; /* And finally we are done */
     }
+
+    // Now, update the indices.
+    if (!(metadata->subject->index_lengths[max_index] % 128) && !(metadata->subject->index_lengths[max_index]))
+        metadata->subject->category_indices[max_index] = realloc(metadata->subject->category_indices[max_index], sizeof(QuestionMetadata*) * (metadata->subject->index_lengths[max_index] + 128)); /* Add more memory into this */
+    metadata->subject->category_indices[max_index][metadata->subject->index_lengths[max_index]] = metadata; /* Add in the metadata thing */
+    metadata->subject->index_lengths[max_index]++; /* Inc the length */
 
     return 0;
 database_add_question_error:
