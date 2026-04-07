@@ -20,6 +20,10 @@ typedef struct gui_data_s {
     QuestionDatabase *database;
     GtkWidget *database_info;
     int hash_table_size; /* This */
+    int categories[32]; /* More this */
+    GtkWidget *num_marks; /* Number of marks */
+    GtkWidget *subject_chosen; /* Obviously */
+    GtkWidget *categories_box; 
 
 } GuiData; /* Stores gui data */
 void update_database_info(QuestionDatabase *database, GtkWidget *database_info);

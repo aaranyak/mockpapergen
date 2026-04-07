@@ -21,6 +21,7 @@ int get_questions_for_paper(QuestionMetadata *question_list[128], QuestionDataba
     int errors = 0; /* This is so that this doesn't get stuck in a loop if not enough questions are found */ 
     while (current_marks < marks && errors < ERROR_THRESHOLD) { /* Until we've found enough questionsto fill in the blanks */
         int category = categories[random() % num_categories]; /* Get a random category */
+        errors++; if (subject->index_lengths[category] == 0) continue; errors--; /* Done with this thing */
         QuestionMetadata *metadata = subject->category_indices[category][random() % subject->index_lengths[category]]; /* random question */
         errors++; if (metadata->is_used) continue; /* If this is a used question try again */
         errors = 0; /* Not a used question */
@@ -85,7 +86,15 @@ void write_question_html(xmlNode *document_body, PaperQuestion *question, int in
 
     // Add question marks
 
+    // Here you go - ????????????????????????????????????????????????????????????????
 
+    // Ok just kidding not those kind of question marks
+    
+    if (!question->subquestions) { /* If there are no subquestions */
+        char marks_text[8]; sprintf(marks_text, "[%d]", question->marks); /* Get the marks of the question */
+        xmlNode *marks_object = xmlNewTextChild(big_box, 0, "div", marks_text); /* Add the marks thing */
+        xmlNewProp(marks_object, "class", "marksbox"); /* Add the style */ 
+    }
 }
 
 int generate_paper(QuestionDatabase *database, SubjectInfo *subject, int num_categories, int *categories, int marks, char *file_path) {

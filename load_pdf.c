@@ -198,29 +198,30 @@ inline int is_number(char *string, int length) {
     return 1; /* FINALLY */
 }
 
-#define STOP_VALUE_NEXTER 13
+#define STOP_VALUE_NEXTER 14
 
 inline int stop_question_text(TextList *thing) {
     /* Checks if this is normal text or some kind of key */
     int len = strlen(thing->text); /* Sorry but kinda important */
     if (in_range(strstr(thing->text, "(a)") - thing->text, 0, 2) || in_range(strstr(thing->text, "(i)") - thing->text, 0, 2)) return 1; /* This is a subquestion */
-    if (is_number(thing->text, len) && thing->pos_x < 95) return 2; /* This is the next question */
+//    if (is_number(thing->text, len) && thing->pos_x < 95) return 2; /* This is the next question (this breaks a bunch of stuff) */
     if (strstr(thing->text,".........")) return 3; /* This is a working space */
     if (in_range(strstr(thing->text, "A") - thing->text, 0, 2) && len < 3) return 4; /* Behold, multiple choice question */
     if (strstr(thing->text, "Complete the table") == thing->text) return 5; /* This is a table question */ 
     if (strstr(thing->text, "Use the terms from the list") == thing->text) return 6; /* This is a fill in the blanks */ 
     if (strstr(thing->text, "Draw one or more lines") == thing->text) return 7; /* This is a fill in the blanks */
-    if (strstr(thing->text, "Draw one or more lines") == thing->text) return 7; /* This is a fill in the blanks */
-    if (strstr(thing->text, "Method 1") == thing->text) return 8; /* This is a something there are so many question types */
     if (strstr(thing->text, "01") == thing->text) return 9; /* This is a code snuppet (that's a real word!!!!!, I swear it is!!!!!!) */
     if (strstr(thing->text, "•") == thing->text) return 10; /* This is a list */
     if (strstr(thing->text, "Working space")) return 11; /* Working space */
     if (thing->text[len - 1] == ']' && (thing->text[len - 3] == '[' || thing->text[len - 4] == '[')) return 12; /* marks thing */
+    if (thing->pos_x > 140) return 13; /* This is the last heuristic */
     if (strstr(thing->text, "from the following list of words")) return STOP_VALUE_NEXTER; /* These will be also read now */
     if (strstr(thing->text, "Consider the logic circuit") == thing->text) return STOP_VALUE_NEXTER + 1; /* SEE DYNAMIC */
     if (strstr(thing->text, "Complete the ")) return STOP_VALUE_NEXTER + 2;
     if (strstr(thing->text, "table is given")) return STOP_VALUE_NEXTER + 3;
     if (strstr(thing->text, "following table")) return STOP_VALUE_NEXTER + 4;
+    if (strstr(thing->text, " are shown")) return STOP_VALUE_NEXTER + 5;
+    if (strstr(thing->text, "Draw ")) return STOP_VALUE_NEXTER + 5;
     return 0; /* This is not a stop text */
 }
 
@@ -239,6 +240,7 @@ TextList *get_question_contents(PaperQuestion *question, TextList *iterator) {
         /* One by one until you reach the marks */
         if (iterator->text[0] == 0) continue; /* Max safety check for null textboxes */
         if (iterator->text[0] == ' ' && iterator->text[1] == 0) continue; /* This is useless ignore it */
+        if (iterator->pos_y > 770) continue; /* Skip the page margins */
         if (check_contents_end(iterator)) break; /* marks thing */
         tl_current = copy_text_list(iterator); /* Copy the textlist */
         if (!tl_head) tl_head = tl_current; /* Set the list head */
