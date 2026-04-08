@@ -50,6 +50,21 @@ char *get_temp_folder_path(char *folder_name) {
 #endif
 }
 
+char *get_data_file_path(char *file_name) {
+    /* Loads a data file from the above given file name */
+#ifndef WINDOWS /* This is if it is on linux */
+    return path_join(DATA_FOLDER, file_name); /* Just join them together */
+#else /* If we are doing this on windows */
+    char *file_name_windows = (char*)malloc(strlen(file_name) + 1); /* Buffer for the file name */
+    strcpy(file_name_windows, file_name); /* Copy it in here */
+    path_convert_to_windows(file_name_windows); /* Convert the path to a windows path */
+    char *data_folder_path = DATA_FOLDER; /* Get the path to the data folder */
+    char *full_path = path_join(data_folder_path, file_name_windows); /* Load data folder */
+    free(data_folder_path); free(file_name_windows); /* Free these, since they involves mallocing */
+    return full_path; /* Return the full path */
+#endif
+}
+
 char *get_file_name(char *path) {
     /* Returns the file name from a path */
     if (!path) return 0; /* Just in case error check */
@@ -66,16 +81,17 @@ char *get_file_name(char *path) {
 
 inline int convert_pdf_to_html(char *pdf_path, char *html_path) {
     /* Converts a pdf file to an html */
-    char *command = (char*)malloc(strlen(pdf_path) + strlen(html_path) + strlen(MUTOOL_PATH) + 32); /* Allocate memory for the command */
-    sprintf(command, "\"%s\" convert -o \"%s\" \"%s\"", MUTOOL_PATH, html_path, pdf_path); /* Set up the command */
+    char *mutool_path = get_data_file_path("mutool"); /* Get the path of the mutool command */
+    char *command = (char*)malloc(strlen(pdf_path) + strlen(html_path) + strlen(mutool_path) + 32); /* Allocate memory for the command */
+    sprintf(command, "\"%s\" convert -o \"%s\" \"%s\"", mutool_path, html_path, pdf_path); /* Set up the command */
     system(command); /* Run the command */
-    free(command); /* Clean up */
+    free(command); free(mutool_path); /* Clean up */
     return 0;
 }
 
 inline int convert_html_to_pdf(char *html_path, char *pdf_path) {
     /* Converts a pdf file to an html */
-    char *command = (char*)malloc(strlen(pdf_path) + strlen(html_path) + strlen(MUTOOL_PATH) + 32); /* Allocate memory for the command */
+    char *command = (char*)malloc(strlen(pdf_path) + strlen(html_path) + 64); /* Allocate memory for the command */
 #ifndef WINDOWS /* Compiling for linux */
     sprintf(command, "google-chrome-stable --headless --no-sandbox --disable-gpu --print-to-pdf=\"%s\" \"%s\"", pdf_path, html_path); /* Set up the command */
 #else /* Compiling for windows */

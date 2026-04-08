@@ -40,7 +40,9 @@ void update_database_info(QuestionDatabase *database, GtkWidget *database_info) 
 void save_callback(GtkButton *button, GuiData *gui_data) {
     /* Opens file chooser and loads in new subject */
     QuestionDatabase *database = gui_data->database; /* Unpack this bit because it's easier that way */
-    save_database(database, "/home/aaranyak/school_dp_1/computer_science/ia/question_database"); /* Save the database */
+    char *database_path = get_data_file_path("question_database"); /* This is the path to the database */
+    save_database(database, database_path); /* Save the database */
+    free(database_path);
 }
 void load_paper_callback(GtkButton *button, GuiData *gui_data) {
     /* Opens file chooser and loads in new paper */
@@ -151,6 +153,27 @@ void update_category_selector(GtkComboBox *subject_choice, GuiData *data) {
     gtk_widget_show_all(outside_box); /* Update this */
 }
 
+void get_database_data(QuestionDatabase *database) {
+    /* Sets up the database by loading everything in */
+    char *subject_files = get_data_file_path("subject_index"); /* This is an index of subject files */
+    FILE *files_index = fopen(subject_files, "r"); /* Open the index of the subject files */ 
+    int file_length = 0; while (!feof(files_index)) {file_length++; fgetc(files_index);} rewind(files_index); /* Get file length */
+    char *index_data = (char*)malloc(file_length); for (int i = 0; i < file_length; i++) index_data[i] = fgetc(files_index); /* Get data */
+    fclose(files_index); free(subject_files); /* Clean up quickly */
+    int read_head = 0, write_head = 0; char current_subject[128]; /* The current subject file */
+    while (read_head < file_length - 2) { /* Until the end of the file has been reached */
+        while (index_data[read_head] != '\n') current_subject[write_head++] = index_data[read_head++]; /* Read in a subject */
+        current_subject[write_head] = 0; write_head = 0; read_head++; /* Clean u-p this stuff */
+        subject_files = get_data_file_path(current_subject); /* Get the subject file */
+        load_subject_data(database, subject_files, 128); /* Load in the subject data */
+        free(subject_files); /* Clear this thing as of now */
+    }
+    
+    char *database_path = get_data_file_path("question_database"); /* This is the database file */
+    read_database(database, database_path); /* Read in the database */
+    free(database_path); /* And delete this finally */
+}
+
 void app_start(GtkApplication *app, gpointer *user_data) {
     /* App launch callback */
     // Create a window, launch a database and load it in.    
@@ -158,8 +181,7 @@ void app_start(GtkApplication *app, gpointer *user_data) {
     GuiData *gui_data = (GuiData*)malloc(sizeof(GuiData)); /* Add this thing */
     
     // Add in function for automatically loading database later.
-    load_subject_data(database, "/home/aaranyak/school_dp_1/computer_science/ia/subject_data_test.txt", 128); /* Load subject data */
-    read_database(database, "/home/aaranyak/school_dp_1/computer_science/ia/question_database"); /* Load in database */
+    get_database_data(database); /* Read in the actual stuff */
 
     GtkWidget *window = gtk_application_window_new(app); /* Create a new window */
     gtk_window_set_title(GTK_WINDOW (window), "Question Paper Database");

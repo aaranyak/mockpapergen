@@ -105,8 +105,10 @@ int generate_paper(QuestionDatabase *database, SubjectInfo *subject, int num_cat
     if (!num_questions) return 0; /* If there aren't enough questions early return */
 
     // Create the xml tree
-    xmlDoc *html_file = htmlReadFile("/home/aaranyak/school_dp_1/computer_science/ia/file_out.html", 0, /* Parse html file */
+    char *out_file_path = get_data_file_path("file_out.html"); /* Get the file fromt the data folder */
+    xmlDoc *html_file = htmlReadFile(out_file_path, 0, /* Parse html file */
             HTML_PARSE_NOBLANKS | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING | HTML_PARSE_NONET); /* Get the template for the paper */
+    free(out_file_path); /* Get rid of it for now */
     
     xmlNode *document_root = xmlDocGetRootElement(html_file); /* Get the root node of the html tree */
     xmlNode *document_body = document_root->children; /* This is the <body> element of the html file */
