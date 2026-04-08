@@ -1,5 +1,12 @@
+CC = gcc # Compiler
+MAKE = make
+CFLAGS = -g -Wno-deprecated-declarations -pthread -IC:/msys64/mingw64/include/gtk-3.0 -IC:/msys64/mingw64/include/pango-1.0 -IC:/msys64/mingw64/include/harfbuzz -IC:/msys64/mingw64/include/freetype2 -IC:/msys64/mingw64/include/cairo -IC:/msys64/mingw64/include/gdk-pixbuf-2.0 -IC:/msys64/mingw64/include/atk-1.0 -IC:/msys64/mingw64/include/glib-2.0 -IC:/msys64/mingw64/lib/glib-2.0/include -IC:/msys64/mingw64/include/webp -DLIBDEFLATE_DLL -IC:/msys64/mingw64/include/libpng16 -IC:/msys64/mingw64/include/pixman-1 -IC:/msys64/mingw64/include/fribidi -IC:/msys64/mingw64/include/libxml2 # Compile Flags
+LDFLAGS = -lgtk-3 -lgdk-3 -lz -lgdi32 -limm32 -lshell32 -lole32 -luuid -lwinmm -ldwmapi -lsetupapi -lcfgmgr32 -lhid -lwinspool -lcomctl32 -lcomdlg32 -lpangowin32-1.0 -lharfbuzz -lpangocairo-1.0 -lpango-1.0 -latk-1.0 -lcairo -lcairo-gobject -ljson-glib-1.0 -lgdk_pixbuf-2.0 -lgio-2.0 -lglib-2.0 -lintl -lgobject-2.0 -lssl -lcrypto -lrsvg-2  -lxml2 # Linker Flags
+NAME = papergen.exe
 
+OBJECT_FILES = generate_paper.o save_database.o gui.o question_database.o load_pdf.o structures.o system_commands.o # All the object files I want to link
 
+all: $(NAME) clean # Build tasks
 
 $(NAME): main.c $(OBJECT_FILES) # Compile executable
 	$(CC) -o $(NAME) -no-pie $(CFLAGS) main.c $(OBJECT_FILES) $(LDFLAGS) # Compile and link
@@ -12,6 +19,12 @@ load_pdf.o: load_pdf.c
 
 gui.o: gui.c
 	$(CC) -c $(CFLAGS) -o gui.o gui.c
+
+generate_paper.o: generate_paper.c
+	$(CC) -c $(CFLAGS) -o generate_paper.o generate_paper.c
+
+save_database.o: save_database.c
+	$(CC) -c $(CFLAGS) -o save_database.o save_database.c
 
 question_database.o: question_database.c
 	$(CC) -c $(CFLAGS) -o question_database.o question_database.c

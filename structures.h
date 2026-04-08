@@ -6,7 +6,7 @@
 #include <string.h>
 #include <libxml/HTMLparser.h>
 #include <libxml/tree.h>
-
+#include <stdint.h>
 // Paper parsing stuff
 typedef struct text_list_s TextList; /* FD for linked list */
 typedef struct paper_question_s PaperQuestion; /* FD ditto */

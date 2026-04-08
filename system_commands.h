@@ -1,8 +1,8 @@
 /* Header file for system_commands.c */
 #ifndef SYSTEMCOMMANDS_H
 #define SYSTEMCOMMANDS_H
-#undef WINDOWS /* This controls whether we compile for windows or linux */
-#define DEBUG
+#define WINDOWS /* This controls whether we compile for windows or linux */
+#undef DEBUG
 
 // All functions defined below
 void path_convert_to_windows(char *path); /* Replaces all "/"s with "\"s */
@@ -30,5 +30,13 @@ int convert_html_to_pdf(char *html_path, char *pdf_path);
         #define DATA_FOLDER  (path_join(getenv("USERPROFILE"), "AppData\\Local\\mockpapergen\\")) /* I dislike it how windows makes it all so cryptic */
     #endif
 #endif
-    
+
+#endif
+
+// Here, port the random function for windows
+#ifdef WINDOWS /* Only on windows */
+    #include <glib.h>
+    #include<windows.h>
+    #define random() (g_random_int()) /* Here is the random function, since windows doesn't like the original one */
+    #define srandom(x) (g_random_set_seed((x))) /* And the one to init the seed */
 #endif
