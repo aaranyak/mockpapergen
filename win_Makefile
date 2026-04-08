@@ -1,0 +1,24 @@
+
+
+
+$(NAME): main.c $(OBJECT_FILES) # Compile executable
+	$(CC) -o $(NAME) -no-pie $(CFLAGS) main.c $(OBJECT_FILES) $(LDFLAGS) # Compile and link
+
+system_commands.o: system_commands.c
+	$(CC) -c $(CFLAGS) -o system_commands.o system_commands.c
+
+load_pdf.o: load_pdf.c
+	$(CC) -c $(CFLAGS) -o load_pdf.o load_pdf.c
+
+gui.o: gui.c
+	$(CC) -c $(CFLAGS) -o gui.o gui.c
+
+question_database.o: question_database.c
+	$(CC) -c $(CFLAGS) -o question_database.o question_database.c
+
+structures.o: structures.c
+	$(CC) -c $(CFLAGS) -o structures.o structures.c
+
+.PHONY: clean # Not a real target
+clean: # Cleanup tasks
+	rm $(OBJECT_FILES) # Delete all this stuff
