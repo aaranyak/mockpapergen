@@ -72,3 +72,16 @@ inline int convert_pdf_to_html(char *pdf_path, char *html_path) {
     free(command); /* Clean up */
     return 0;
 }
+
+inline int convert_html_to_pdf(char *html_path, char *pdf_path) {
+    /* Converts a pdf file to an html */
+    char *command = (char*)malloc(strlen(pdf_path) + strlen(html_path) + strlen(MUTOOL_PATH) + 32); /* Allocate memory for the command */
+#ifndef WINDOWS /* Compiling for linux */
+    sprintf(command, "google-chrome-stable --headless --no-sandbox --disable-gpu --print-to-pdf=\"%s\" \"%s\"", pdf_path, html_path); /* Set up the command */
+#else /* Compiling for windows */
+    sprintf(command, "start chrome --headless --no-sandbox --disable-gpu --print-to-pdf=\"%s\" \"%s\"", pdf_path, html_path); /* Set up the command */
+#endif
+    system(command); /* Run the command */
+    free(command); /* Clean up */
+    return 0;
+}

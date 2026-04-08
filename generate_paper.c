@@ -118,7 +118,12 @@ int generate_paper(QuestionDatabase *database, SubjectInfo *subject, int num_cat
         write_question_html(document_body, question_list[index]->question, index, 1); /* Add in a question from the database */ 
     
     // Now save the file
-    htmlSaveFileFormat(file_path, html_file, 0, 1); /* Yes add indents */
+
+    // Get temporary file location
+    char *temporary_file = get_temp_folder_path("papergen_html_out.html"); /* Get a file in the temp directory */
+    htmlSaveFileFormat(temporary_file, html_file, 0, 1); /* Yes add indents */
+    convert_html_to_pdf(temporary_file, file_path); /* Convert the html to pdf */
+    remove(temporary_file); free(temporary_file); /* Do some quick clean-up */
 
     return num_questions;
 }

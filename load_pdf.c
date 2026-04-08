@@ -214,7 +214,6 @@ inline int stop_question_text(TextList *thing) {
     if (strstr(thing->text, "•") == thing->text) return 10; /* This is a list */
     if (strstr(thing->text, "Working space")) return 11; /* Working space */
     if (thing->text[len - 1] == ']' && (thing->text[len - 3] == '[' || thing->text[len - 4] == '[')) return 12; /* marks thing */
-    if (thing->pos_x > 140) return 13; /* This is the last heuristic */
     if (strstr(thing->text, "from the following list of words")) return STOP_VALUE_NEXTER; /* These will be also read now */
     if (strstr(thing->text, "Consider the logic circuit") == thing->text) return STOP_VALUE_NEXTER + 1; /* SEE DYNAMIC */
     if (strstr(thing->text, "Complete the ")) return STOP_VALUE_NEXTER + 2;
@@ -240,7 +239,6 @@ TextList *get_question_contents(PaperQuestion *question, TextList *iterator) {
         /* One by one until you reach the marks */
         if (iterator->text[0] == 0) continue; /* Max safety check for null textboxes */
         if (iterator->text[0] == ' ' && iterator->text[1] == 0) continue; /* This is useless ignore it */
-        if (iterator->pos_y > 770) continue; /* Skip the page margins */
         if (check_contents_end(iterator)) break; /* marks thing */
         tl_current = copy_text_list(iterator); /* Copy the textlist */
         if (!tl_head) tl_head = tl_current; /* Set the list head */

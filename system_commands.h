@@ -12,6 +12,7 @@ char *get_file_name(char *path);
 
 // Inline functions
 int convert_pdf_to_html(char *pdf_path, char *html_path);
+int convert_html_to_pdf(char *html_path, char *pdf_path);
 
 // Temporary Folder
 #ifndef WINDOWS /* Compiling for linux */

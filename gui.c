@@ -61,6 +61,29 @@ void load_paper_callback(GtkButton *button, GuiData *gui_data) {
     g_object_unref(file_chooser); /* Free stuff */
 }
 
+void generate_pdf_callback(GtkButton *button, GuiData *data) {
+    /* This is the callback that generates a pdf file from the questions */
+
+    QuestionDatabase *database = data->database; /* Unpack this */
+    GtkWidget *marks_spin = data->num_marks; /* This gets the number of marks thing */
+    GtkWidget *subject_combo = data->subject_chosen; /* The combobox to choose a subject */
+
+    int total_marks = gtk_spin_button_get_value(GTK_SPIN_BUTTON (marks_spin)); /* Get the total number of marks */
+    int subject_index = gtk_combo_box_get_active(GTK_COMBO_BOX (subject_combo)); /* Get the index of the subject */
+    SubjectInfo *subject = database->subjectlist; while (subject_index--) subject = subject->next; /* Get the appropriate subject */
+
+    int category_indices[32]; int num_categories = 0; for (int i = 0; i < subject->num_categories; i++) if (data->categories[i]) category_indices[num_categories++] = i; /* Add the category list */
+    
+    // Get the file path
+    GtkWidget *main_window = gtk_widget_get_toplevel(GTK_WIDGET (button)); /* Get the window for popup access */
+    GtkFileChooserNative *file_chooser = gtk_file_chooser_native_new("Save File", GTK_WINDOW (main_window), GTK_FILE_CHOOSER_ACTION_SAVE, 0, 0); /* popup the file dialog thingy */
+    gint result = gtk_native_dialog_run(GTK_NATIVE_DIALOG (file_chooser)); /* Run the file chooser */
+    if (result != GTK_RESPONSE_ACCEPT) {g_object_unref(file_chooser); return;}
+    char *file_path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (file_chooser)); /* Get this */
+    
+    int yes = generate_paper(database, subject, num_categories, category_indices, total_marks, file_path); /* Generate the question paper */
+    if (!yes) printf("Sorry, the paper could not be generated\n");
+}
 
 
 void configure_tree_view(GuiData *data) {
@@ -172,6 +195,7 @@ void app_start(GtkApplication *app, gpointer *user_data) {
     // Connect signals
     g_signal_connect(save_button, "clicked", G_CALLBACK (save_callback), gui_data); /* This */
     g_signal_connect(paper_button, "clicked", G_CALLBACK (load_paper_callback), gui_data); /* And this */
+    g_signal_connect(generate, "clicked", G_CALLBACK (generate_pdf_callback), gui_data); /* And this */
     g_signal_connect(subject_choice, "changed", G_CALLBACK (update_category_selector), gui_data); 
 
     // Pack Stuff
