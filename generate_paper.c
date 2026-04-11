@@ -125,9 +125,6 @@ int generate_paper(QuestionDatabase *database, SubjectInfo *subject, int num_cat
     char *temporary_file = get_temp_folder_path("papergen_html_out.html"); /* Get a file in the temp directory */
     htmlSaveFileFormat(temporary_file, html_file, 0, 1); /* Yes add indents */
     convert_html_to_pdf(temporary_file, file_path); /* Convert the html to pdf */
-#ifdef WINDOWS /* Do something special here */
-    Sleep(1000); /* Wait a second */
-#endif
     remove(temporary_file); free(temporary_file); /* Do some quick clean-up */
 
     return num_questions;

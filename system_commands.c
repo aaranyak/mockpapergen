@@ -81,9 +81,13 @@ char *get_file_name(char *path) {
 
 inline int convert_pdf_to_html(char *pdf_path, char *html_path) {
     /* Converts a pdf file to an html */
+#ifndef WINDOWS /* Running on linux */
     char *mutool_path = get_data_file_path("mutool"); /* Get the path of the mutool command */
+#else /* Running on windows */
+    char *mutool_path = get_data_file_path("mutool.exe"); /* Get the path of the mutool command */
+#endif /* Then call that command */
     char *command = (char*)malloc(strlen(pdf_path) + strlen(html_path) + strlen(mutool_path) + 32); /* Allocate memory for the command */
-    sprintf(command, "\"%s\" convert -o \"%s\" \"%s\"", mutool_path, html_path, pdf_path); /* Set up the command */
+    sprintf(command, "%s convert -o \"%s\" \"%s\"", mutool_path, html_path, pdf_path); /* Set up the command */
     system(command); /* Run the command */
     free(command); free(mutool_path); /* Clean up */
     return 0;
@@ -91,11 +95,11 @@ inline int convert_pdf_to_html(char *pdf_path, char *html_path) {
 
 inline int convert_html_to_pdf(char *html_path, char *pdf_path) {
     /* Converts a pdf file to an html */
-    char *command = (char*)malloc(strlen(pdf_path) + strlen(html_path) + 64); /* Allocate memory for the command */
+    char *command = (char*)malloc(strlen(pdf_path) + strlen(html_path) + 128); /* Allocate memory for the command */
 #ifndef WINDOWS /* Compiling for linux */
-    sprintf(command, "google-chrome-stable --headless --no-sandbox --disable-gpu --print-to-pdf=\"%s\" \"%s\"", pdf_path, html_path); /* Set up the command */
+    sprintf(command, "google-chrome-stable --headless --no-sandbox --disable-gpu --no-pdf-header-footer --print-to-pdf=\"%s\" \"%s\"", pdf_path, html_path); /* Set up the command */
 #else /* Compiling for windows */
-    sprintf(command, "start chrome --headless --no-sandbox --disable-gpu --print-to-pdf=\"%s\" \"%s\"", pdf_path, html_path); /* Set up the command */
+    sprintf(command, "start /wait chrome --headless --no-sandbox --disable-gpu --no-pdf-header-footer --print-to-pdf=\"%s\" \"%s\"", pdf_path, html_path); /* Set up the command */
 #endif
     system(command); /* Run the command */
     free(command); /* Clean up */

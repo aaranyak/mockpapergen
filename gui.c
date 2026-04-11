@@ -85,6 +85,7 @@ void generate_pdf_callback(GtkButton *button, GuiData *data) {
     
     int yes = generate_paper(database, subject, num_categories, category_indices, total_marks, file_path); /* Generate the question paper */
     if (!yes) printf("Sorry, the paper could not be generated\n");
+    g_object_unref(file_chooser); /* Free stuff */
 }
 
 

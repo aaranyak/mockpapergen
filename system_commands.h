@@ -1,8 +1,8 @@
 /* Header file for system_commands.c */
 #ifndef SYSTEMCOMMANDS_H
 #define SYSTEMCOMMANDS_H
-#define WINDOWS /* This controls whether we compile for windows or linux */
-#undef DEBUG
+#undef WINDOWS /* This controls whether we compile for windows or linux */
+#define DEBUG
 
 // All functions defined below
 void path_convert_to_windows(char *path); /* Replaces all "/"s with "\"s */

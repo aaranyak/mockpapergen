@@ -31,7 +31,6 @@ xmlDocPtr get_pdf_as_html(char *path) {
     char *html_path = get_temp_folder_path(html_name); /* Get a path in the /tmp directory */
     // Do the conversion
     convert_pdf_to_html(path, html_path); /* Run the conversion */
-
     // Load the html file
     xmlDocPtr html_file = htmlReadFile(html_path, 0, HTML_PARSE_NOBLANKS /* Parses an html file */
             | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING | HTML_PARSE_NONET); /* Get the html file */
